@@ -1,6 +1,6 @@
 # 🚀 Unleash the Power of Ray: Scale your Training on Cloud GPU Clusters
 
-This repository provides templates for user testing with Ray Train. During testing, we'll help you scale machine learning workloads to cloud clusters with multi-node, multi-GPU training.
+This repository provides templates to **prepare for the Ray Train user tests**. During testing, we'll help you scale machine learning workloads to cloud clusters with multi-node, multi-GPU training.
 
 ## Getting Started
 These instructions will help you prepare the environment on Anyscale Workspace. Please fork this repository and follow the instructions below. Please send your forked github repository URL back to us before user testing.
