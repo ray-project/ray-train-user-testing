@@ -5,7 +5,7 @@ from datasets import load_dataset
 from functools import partial
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
+from tqdm import tqdm
 
 # Data Preprocessing
 def preprocess(batch, tokenizer):
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     val_dataloader = DataLoader(hf_ds["test"], batch_size=32, collate_fn=collate_fn)
 
     configs = {
-        "lr": 2e-5,
+        "lr": 2e-4,
         "eps": 1e-8,
         "num_labels": 2,
         "num_epochs": 4,
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     for epoch in range(configs["num_epochs"]):
         # Training
         model.train()
-        for batch in train_dataloader:
+        for batch in tqdm(train_dataloader, desc=f"Train Epoch {epoch}"):
             input_ids, attention_mask, labels = (
                 batch["input_ids"],
                 batch["attention_mask"],
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         references = []
         model.eval()
         with torch.no_grad():
-            for batch in val_dataloader:
+            for batch in tqdm(val_dataloader, desc=f"Validation Epoch {epoch}"):
                 input_ids, attention_mask, labels = (
                     batch["input_ids"],
                     batch["attention_mask"],
@@ -97,6 +97,7 @@ if __name__ == "__main__":
             "accuracy": accuracy,
         }
 
+        os.makedirs(configs["checkpoint_dir"], exist_ok=True)
         torch.save(
             checkpoint, os.path.join(configs["checkpoint_dir"], f"ckpt_{epoch}.pth")
         )
