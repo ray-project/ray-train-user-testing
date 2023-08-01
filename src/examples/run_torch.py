@@ -1,4 +1,6 @@
 import os
+import wandb
+import mlflow
 import torch
 import torch.nn.functional as F
 from datasets import load_dataset
@@ -6,6 +8,7 @@ from functools import partial
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from tqdm import tqdm
+
 
 # Data Preprocessing
 def preprocess(batch, tokenizer):
@@ -26,6 +29,9 @@ def preprocess(batch, tokenizer):
     out["label"] = labels.cuda()
     return out
 
+
+USE_WANDB = False
+USE_MLFLOW = False
 
 if __name__ == "__main__":
     # Prepare Data
@@ -51,6 +57,17 @@ if __name__ == "__main__":
         model.parameters(), lr=configs["lr"], eps=configs["eps"]
     )
 
+    if USE_WANDB:
+        # Setup Experiment tracking tools
+        # Use export WANDB_API_KEY=..." to set environment variable
+        wandb.login(key=os.environ["WANDB_API_KEY"])
+        run = wandb.init(project="train-cuj-pytorch-example", id="v1", config=configs)
+
+    if USE_MLFLOW:
+        mlflow.set_tracking_uri("./mlflow_logs")
+        mlflow.set_experiment("train-cuj-pytorch-example")
+
+    global_steps = 0
     for epoch in range(configs["num_epochs"]):
         # Training
         model.train()
@@ -66,6 +83,12 @@ if __name__ == "__main__":
             loss = F.cross_entropy(logits.view(-1, configs["num_labels"]), labels)
             loss.backward()
             optimizer.step()
+            global_steps += 1
+
+            if USE_WANDB:
+                run.log({"train_loss": loss.item()}, step=global_steps)
+            if USE_MLFLOW:
+                mlflow.log_metrics({"train_loss": loss.item()}, step=global_steps)
 
         # Evaluation
         predictions = []
@@ -88,6 +111,13 @@ if __name__ == "__main__":
         references = torch.concat(references).view(-1)
         accuracy = (predictions == references).sum() / len(predictions)
         print(f"Epoch {epoch}: Evaluation accuracy = {accuracy}.")
+
+        if USE_WANDB:
+            run.log({"epoch": epoch, "accuracy": accuracy}, step=global_steps)
+        if USE_MLFLOW:
+            mlflow.log_metrics(
+                {"epoch": epoch, "accuracy": accuracy.item()}, step=global_steps
+            )
 
         # Saving checkpoint
         checkpoint = {
