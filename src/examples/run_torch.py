@@ -24,9 +24,9 @@ def preprocess(batch, tokenizer):
     )
 
     out = {}
-    out["input_ids"] = encoded_sent["input_ids"].cuda()
-    out["attention_mask"] = encoded_sent["attention_mask"].cuda()
-    out["label"] = labels.cuda()
+    out["input_ids"] = encoded_sent["input_ids"]
+    out["attention_mask"] = encoded_sent["attention_mask"]
+    out["label"] = labels
     return out
 
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     model = AutoModelForSequenceClassification.from_pretrained(
         "bert-base-cased", num_labels=configs["num_labels"]
-    ).to("cuda")
+    )
 
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=configs["lr"], eps=configs["eps"]
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         accuracy = (predictions == references).sum() / len(predictions)
         print(f"Epoch {epoch}: Evaluation accuracy = {accuracy}.")
 
-        # Saving checkpoint
+        # Saving checkpoint per epoch
         checkpoint = {
             "epoch": epoch + 1,
             "model_state_dict": model.state_dict(),
