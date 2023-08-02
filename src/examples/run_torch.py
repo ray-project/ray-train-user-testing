@@ -61,10 +61,15 @@ if __name__ == "__main__":
         # Setup Experiment tracking tools
         # Use export WANDB_API_KEY=..." to set environment variable
         wandb.login(key=os.environ["WANDB_API_KEY"])
-        run = wandb.init(project="train-cuj-pytorch-example", id="v1", config=configs)
+        run = wandb.init(
+            project="train-cuj-pytorch-example",
+            id="v1",
+            dir="./logs/wandb",
+            config=configs,
+        )
 
     if USE_MLFLOW:
-        mlflow.set_tracking_uri("./mlflow_logs")
+        mlflow.set_tracking_uri("./logs/mlflow")
         mlflow.set_experiment("train-cuj-pytorch-example")
 
     global_steps = 0
