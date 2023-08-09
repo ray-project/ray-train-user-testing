@@ -104,8 +104,8 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         logger=wandb_logger,
         callbacks=[checkpoint_callback],
-        max_epochs=3, # set to 3 for faster testing
-        accelerator="gpu",
+        max_epochs=3,
+        accelerator="cpu",
         strategy="ddp",
         devices="auto",
         log_every_n_steps=1,
