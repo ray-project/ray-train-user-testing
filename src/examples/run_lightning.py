@@ -106,7 +106,6 @@ if __name__ == "__main__":
         callbacks=[checkpoint_callback],
         max_epochs=3,
         accelerator="cpu",
-        strategy="ddp",
         devices="auto",
         log_every_n_steps=1,
     )
