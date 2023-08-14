@@ -54,7 +54,7 @@ if __name__ == "__main__":
         logging_strategy="steps",
         logging_steps=10,
         push_to_hub=False,
-        report_to="wandb",
+        report_to="none",
         save_total_limit=2,
         no_cuda=True # Use CPUs here
     )
