@@ -56,6 +56,7 @@ if __name__ == "__main__":
         push_to_hub=False,
         report_to="wandb",
         save_total_limit=2,
+        no_cuda=True # Use CPUs here
     )
 
     trainer = Trainer(
