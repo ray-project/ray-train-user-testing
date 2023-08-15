@@ -1,7 +1,7 @@
-from converters.registry import register_converter
+# from converters.registry import register_converter
 from converters.source_target_converter import SourceTargetConverter
 
-@register_converter('math')
+# @register_converter('math')
 class MathConverter(SourceTargetConverter):
     """
     ```

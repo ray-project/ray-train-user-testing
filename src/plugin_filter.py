@@ -7,10 +7,7 @@ from typing import List
 import datasets
 from tqdm import trange, tqdm
 
-from converters.base_converter import BaseConverter
-from converters.registry import get_converter
 from dataset import Example
-from demo_selection import FixedDemoSelection
 from plugin_dataset import PlugInDataset
 from generate import Generator
 
@@ -33,6 +30,7 @@ def run_filtering(
         generator: Generator,
         args: argparse.Namespace
 ):
+    # from converters.registry import get_converter
     random.seed(0)
     # dataset = datasets.load_dataset('sst2')
     # dataset = datasets.load_dataset('gsm8k', 'main')
@@ -40,7 +38,10 @@ def run_filtering(
     dataset = datasets.load_dataset(args.dataset_name, args.dataset_config_name)
     # dataset["train"] = dataset["train"].select(range(1000))
     plugin_dataset = PlugInDataset(data_dict=dataset, data_type="train", src_key=args.src_key, tgt_key=args.tgt_key, batch_size=args.batch_size)
-    converter = get_converter(args.converter)
+    # converter = get_converter(args.converter)
+
+    from converters.math_word_problem_converter import MathConverter
+    converter = MathConverter()
 
     # sufficient data selection
     cnt_removed = 0
@@ -169,21 +170,33 @@ if __name__ == "__main__":
         )
         args.max_new_tokens = args.max_length
 
-    generator = Generator(
-        model_name=args.model_path,
-        model_path=args.model_path,
-        from_config=args.from_config,
-        config_name=args.config_name,
-        is_autoreg=args.is_autoreg,
-        batch_size=args.batch_size,
-        fp16=args.fp16,
-    )
-    generator.model.zero_grad()
-    generator.model.eval()
-    logging.info("model loaded")
 
-    logging.info(f"Model tokenizer length = {len(generator.tokenizer)}")
-    run_filtering(
-        generator=generator,
-        args=args,
+    def train_func():
+        generator = Generator(
+            model_name=args.model_path,
+            model_path=args.model_path,
+            from_config=args.from_config,
+            config_name=args.config_name,
+            is_autoreg=args.is_autoreg,
+            batch_size=args.batch_size,
+            fp16=args.fp16,
+        )
+        generator.model.zero_grad()
+        generator.model.eval()
+        logging.info("model loaded")
+
+        logging.info(f"Model tokenizer length = {len(generator.tokenizer)}")
+        run_filtering(
+            generator=generator,
+            args=args,
+        )
+    
+    from ray.train.torch import TorchTrainer
+    from ray.air import ScalingConfig
+
+    trainer = TorchTrainer(
+        train_func,
+        scaling_config=ScalingConfig(num_workers=4, use_gpu=True)
     )
+
+    trainer.fit()

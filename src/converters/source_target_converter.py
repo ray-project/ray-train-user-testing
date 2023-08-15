@@ -1,10 +1,10 @@
 from typing import List
 from dataset import Example
 from converters.base_converter import BaseConverter
-from converters.registry import register_converter
+# from converters.registry import register_converter
 from typing import Optional
 
-@register_converter('source_target')
+# @register_converter('source_target')
 class SourceTargetConverter(BaseConverter):
     """
     ```

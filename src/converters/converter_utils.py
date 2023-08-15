@@ -66,8 +66,10 @@ def compile_code_get_object(py_code_str: str):
 
 
 def setup_imports():
+    import os
+    print("current_directory", os.getcwd())
     converter_modules = [f'converters.{f.replace(".py", "")}'
-                         for f in os.listdir('src/converters') if f.endswith('.py')
+                         for f in os.listdir('converters') if f.endswith('.py')
                          and f not in ('registry.py', 'convertor_utils.py')]
     for module in converter_modules:
         importlib.import_module(module)

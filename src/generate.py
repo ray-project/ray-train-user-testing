@@ -20,6 +20,7 @@ from dataset import AutoregLMDataset
 
 logging.basicConfig(level=logging.INFO)
 
+import deepspeed
 
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
@@ -70,6 +71,9 @@ class Generator:
             #     len(num_toks) == 1
             # ), f"IO_SEP token not added to tokenizer: {self.tokenizer([AutoregLMDataset.IO_SEP])}"
 
+        ds_engine = deepspeed.init_inference(self.model, mp_size=4, dtype=torch.half, checkpoint=None)
+        self.model = ds_engine.module
+
         self.batch_size = batch_size
 
         self.decoder_start_token_id = None
@@ -91,7 +95,8 @@ class Generator:
         model.load_state_dict(ckpt)
         if self.fp16:
             model = model.half()
-        self.model = model.to(self.device).eval()
+        # self.model = model.to(self.device).eval()
+        self.model = model.eval()
         print(f"Successfully loaded model from {model_path}")
 
     def load_pretrained(self, model_name: str, model_path):
@@ -105,10 +110,12 @@ class Generator:
             self.model = AutoModelForCausalLM.from_pretrained(model_path)
             if self.fp16:
                 self.model = self.model.half()
-            self.model.to(self.device).eval()
+            # self.model.to(self.device).eval()
+            self.model.eval()
 
         else:
-            self.model = AutoModelForSeq2SeqLM.from_pretrained(model_path).to(self.device).eval()
+            # self.model = AutoModelForSeq2SeqLM.from_pretrained(model_path).to(self.device).eval()
+            self.model = AutoModelForSeq2SeqLM.from_pretrained(model_path).eval()
             self.do_clean_output = False
 
     def generate(
@@ -209,6 +216,9 @@ class Generator:
                         attention_mask = attention_mask[
                             :, : self.max_context_length - max_new_tokens
                         ]
+
+                    
+
                     outputs = self.model.generate(
                                 input_ids=input_ids,
                                 attention_mask=attention_mask,
