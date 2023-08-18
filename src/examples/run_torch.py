@@ -32,7 +32,7 @@ def preprocess(batch, tokenizer):
 
 if __name__ == "__main__":
     # Prepare Data
-    hf_ds = load_dataset("tweet_eval", "irony")
+    hf_ds = load_dataset("tweet_eval", "irony", keep_in_memory=True)
     tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
     collate_fn = partial(preprocess, tokenizer=tokenizer)
     train_dataloader = DataLoader(hf_ds["train"], batch_size=32, collate_fn=collate_fn)

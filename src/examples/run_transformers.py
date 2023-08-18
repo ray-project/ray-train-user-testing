@@ -12,7 +12,7 @@ from transformers import (
 
 if __name__ == "__main__":
     # Prepare Data
-    hf_ds = load_dataset("tweet_eval", "irony")
+    hf_ds = load_dataset("tweet_eval", "irony", keep_in_memory=True)
     tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
     def tokenize(examples):
